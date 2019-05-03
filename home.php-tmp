@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>E-Parking</title>
+
+  <!-- start: Css -->
+  <link rel="stylesheet" type="text/css" href="asset/css/bootstrap.min.css">
+  <script type="text/javascript" src="asset/js/jquery.min.js"></script>
+  <script type="text/javascript" src="asset/js/bootstrap.min.js"></script>
+
+  <!-- plugins -->
+  <link rel="stylesheet" type="text/css" href="asset/css/plugins/font-awesome.min.css"/>
+  <link rel="stylesheet" type="text/css" href="asset/css/plugins/animate.min.css"/>
+  <link rel="stylesheet" type="text/css" href="asset/css/plugins/nouislider.min.css"/>
+  <link rel="stylesheet" type="text/css" href="asset/css/plugins/select2.min.css"/>
+  <link rel="stylesheet" type="text/css" href="asset/css/plugins/ionrangeslider/ion.rangeSlider.css"/>
+  <link rel="stylesheet" type="text/css" href="asset/css/plugins/ionrangeslider/ion.rangeSlider.skinFlat.css"/>
+  <link rel="stylesheet" type="text/css" href="asset/css/plugins/bootstrap-material-datetimepicker.css"/>
+  <link rel="stylesheet" type="text/css" href="asset/css/plugins/simple-line-icons.css"/>
+  <link rel="stylesheet" type="text/css" href="asset/css/plugins/mediaelementplayer.css"/>
+  <link href="asset/css/style.css" rel="stylesheet">
+  <!-- end: Css -->
+  <link rel="shortcut icon" href="asset/img/logo.png">
+
+</head>
+
+<?php
+include "config/koneksi.php";
+date_default_timezone_set("Asia/Jakarta");
+
+$username = $_GET['nama'];
+
+if (isset($_GET['logout'])) {
+	session_unset();
+	session_destroy();
+
+	echo "<script>document.location.href='index.php'</script>";
+}
+
+if (isset($_POST['btn_masuk'])) {
+	$kode             = "EP".rand(101, 999);
+	$plat_nomor       = $_POST['plat_nomor'];
+	$merk             = $_POST['merk'];
+	$jam_masuk        = date('H:i');
+	$hitung_jam_masuk = date('H');
+	$jenis            = $_POST['jenis'];
+
+	$cek_kode = mysqli_num_rows(mysqli_query($con, "SELECT kode FROM tb_daftar_parkir WHERE kode='$kode'"));
+	$cek_plat = mysqli_num_rows(mysqli_query($con, "SELECT plat_nomor FROM tb_daftar_parkir WHERE plat_nomor='$plat_nomor'"));
+	if ($cek_kode >= 1) {
+		$kode = "EP".rand(100, 999);
+	} elseif ($cek_plat >= 1) {
+		echo "<script>alert('Kendaraan Tersebut Sudah Ada di Dalam Parkiran')</script>";
+	} else {
+		$sql   = "INSERT INTO tb_daftar_parkir VALUES('$kode', '$plat_nomor', '$jenis', '$merk', '$jam_masuk', '$hitung_jam_masuk')";
+		$query = mysqli_query($con, $sql);
+
+		echo "<script>document.location.href='home.php?nama=$username'</script>";
+	}
+}
+
+?>
+
+<body style="overflow-x: hidden;" class="dashboard topnav">
+	<!-- start: Header -->
+        <nav class="navbar navbar-default header navbar-fixed-top bg-teal">
+          <div class="col-md-12 nav-wrapper">
+            <div class="navbar-header" style="width:100%;">
+                <div class="navbar-brand" style="margin-left: -10px;" name="home_logo">
+                <img src="asset/img/logo.png" class="img-circle" alt="logo" style="float: left;margin-top: -10px;" width="45px"/>
+                 <b style="float: left;margin-left: 4px;">E-Parking</b>
+                </div>
+
+              <ul class="nav navbar-nav navbar-right user-nav">
+                <li class="user-name"><span><?php echo $username?></span></li>
+                  <li class="dropdown avatar-dropdown">
+                   <img src="asset/img/avatar.png" class="img-circle avatar" alt="username" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" style="cursor: pointer;" />
+                   <ul class="dropdown-menu user-dropdown">
+                     <li>
+                      <ul>
+                        <a href="?logout">
+                          <li style="float: left;"><span class="fa fa-power-off "></span></li>
+                          <li style="color: black; float: left;margin-left: 10px">Log Out</li>
+                        </a>
+                      </ul>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </nav>
+      <!-- end: Header -->
+
+      <!-- Content -->
+      <div id="content">
+            <!-- Masuk Parkir -->
+                <div class="col-md-7" style="margin: 30px -100px 0 4px;">
+                  <div class="col-md-10 panel">
+                    <div class="col-md-12 panel-heading bg-teal">
+                      <h4 style="color: white;font-size: 20pt;">Masuk Parkir</h4>
+                    </div>
+                    <div class="col-md-12 panel-body" style="padding-bottom:25px;">
+                      <div class="col-md-12">
+                        <form class="cmxform" method="POST">
+                          <div class="col-md-6">
+                            <div class="form-group form-animate-text" style="margin-top:15px !important;">
+                              <input type="text" class="form-text" name="plat_nomor" value="<?php echo @$plat_nomor?>" required id="plat_nomor">
+                              <span class="bar"></span>
+                              <label>Plat Nomor</label>
+                            </div>
+
+                            <div class="form-group form-animate-text" style="margin-top:10px !important;">
+                              <input type="text" class="form-text" name="merk" value="<?php echo @$merk?>" required id="merk">
+                              <span class="bar"></span>
+                              <label>Merk Kendaraan</label>
+                            </div>
+                          </div>
+
+                          <div class="col-md-6" style="padding-top: 10px">
+                            <label><h4>Jenis Kendaraan</h4></label>
+                          </div>
+
+                          <div class="col-md-6" style="padding:5px 20px 0 25px" name="jenis_kendaraan">
+
+                            <div class="form-animate-radio">
+                              <label class="radio">
+                                <input id="radio1" type="radio" name="jenis" value="Motor" required/>
+                                <span class="outer">
+                                  <span class="inner"></span>
+                                </span> Motor
+                              </label>
+                            </div>
+
+                            <div class="form-animate-radio">
+                              <label class="radio">
+                                <input id="radio2" type="radio" name="jenis" value="Mobil" required/>
+                                <span class="outer">
+                                  <span class="inner"></span>
+                                </span> Mobil
+                              </label>
+                            </div>
+
+                            <div class="form-animate-radio">
+                              <label class="radio">
+                                <input id="radio3" type="radio" name="jenis" value="Truk/Bus/Lainnya" required/>
+                                <span class="outer">
+                                  <span class="inner"></span>
+                                </span> Truk / Bus / Lainnya
+                              </label>
+                            </div>
+
+                          </div>
+                          <button type="button" id="btnSubmit">Submit</button>
+                          <!-- Modal -->
+                          <div class="col-md-10">
+                          <div id="myModal" class="modal fade modal-v2" role="dialog">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="col-md-12 modal-content-right">
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                            <p>Masukan Kode</p>
+                                            <input type="text" class="modal-content-right-text-mail" />
+                                            <input class="submit btn btn-primary col-md-12" type="submit" value="Submit" style="height: 40px" name="btn_masuk" data-toggle="modal" data-target="#myModal">
+                                        </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            <!-- end:Modal -->
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- end:Masuk Parkir -->
+
+              <!-- Keluar Parkir -->
+              <div class="col-md-7" style="margin: 30px -130px 0 0">
+                  <div class="col-md-10 panel">
+                    <div class="col-md-12 panel-heading bg-teal">
+                      <h4 style="color: white;font-size: 20pt;">Keluar Parkir</h4>
+                    </div>
+                    <div class="col-md-12 panel-body" style="padding-bottom:25px;">
+                      <div class="col-md-12">
+                        <form class="cmxform" method="POST">
+                          <div class="col-md-6">
+                            <div class="form-group form-animate-text" style="margin-top:25px !important;">
+                              <input type="text" class="form-text" name="txt_kode" required>
+                              <span class="bar"></span>
+                              <label>Masukan Kode</label>
+                            </div>
+                          </div>
+                          <input class="submit btn btn-primary col-md-12" type="submit" value="Go" style="height: 40px" name="btn_keluar" style="height: 40px">
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- end:Keluar Parkir -->
+
+              <!-- Daftar Kendaraan Yang Parkir -->
+                <div class="col-md-12" style="margin: 17px -100px 0 4px;">
+                  <div class="col-md-12 panel">
+                    <div class="col-md-12 panel-heading bg-teal">
+                      <h4 style="color: white;font-size: 20pt;">Daftar Kendaraan</h4>
+                    </div>
+                      <div class="table">
+                    <table class="table table-striped table-bordered col-md-12" width="100%" cellspacing="0">
+                    <thead>
+                      <tr style="font-size: 13pt">
+                        <th width="120px">Kode</th>
+                        <th width="250px">Plat Nomor</th>
+                        <th>Jenis</th>
+                        <th>Merk</th>
+                        <th width="200px">Jam Masuk</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+<?php
+$sql   = "SELECT * FROM tb_daftar_parkir";
+$query = mysqli_query($con, $sql);
+
+while ($data = mysqli_fetch_array($query)) {?>
+	                      <tr style="font-size: 11pt">
+	                        <td><?php echo $data['kode']?></td>
+	                        <td><?php echo $data['plat_nomor']?></td>
+	                        <td><?php echo $data['jenis']?></td>
+	                        <td><?php echo $data['merk']?></td>
+	                        <td><?php echo $data['jam_masuk']." WIB"?></td>
+	                      </tr>
+	<?php }?>
+                    </tbody>
+                  </table>
+                  </div>
+                  </div>
+                </div>
+              <!-- end:Daftar Kendaraan Yang Parkir -->
+      </div>
+      <!-- end: Content -->
+
+<script>
+  $("#btnSubmit").click(function(){
+    if($("#plat_nomor").val() == "") $("#plat_nomor").focus();
+    else if($("#merk").val() == "") $("#merk").focus();
+    else{
+      $("#myModal").modal('show');
+    }
+  })
+</script>
+
+</body>
+</html>
